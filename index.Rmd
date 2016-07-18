@@ -1,0 +1,139 @@
+---
+title       : Planet Utopia
+subtitle    : A statistical overview of population development
+author      : Bjoern W. Steffens
+job         : Data Engineer
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax, quiz, bootstrap]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Introduction
+
+A long time ago ...
+
+Mankind sent a space ship to a galaxy far far away to a planet called Utopia
+named after a village on planet earth.
+
+Decades later people have colonised across this planet and find different
+areas to cultivate and live in. These slides provide statistical information about how the population
+has developed in key areas between January 2015 and June 2016 and what the current trends are.
+
+The [Shiny application](https://bjoernsteffens.shinyapps.io/Project/) allows you to explore all available regions on planet Utopia individually or compare with other regions not presented here.
+
+--- .class #id
+
+## Total Births in key Regions
+
+```{r, echo = F}
+cat(sort(c('India','United States','Canada', 'Australia', 'Russia','Argentina', 'Andorra')), sep = ", ")
+```
+
+```{r worldview, fig.align = 'center', echo=F, warning=F, cache=F, results='asis', plotly = T}
+
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(plotly))
+#Fix error message about phantom_js missing
+#suppressMessages(webshot::install_phantomjs())
+
+df_countrydata <- as.data.frame(unique(read.csv("utopia_population_data.csv")))
+c_list         <- c('India','United States','Canada', 'Australia', 'Russia','Argentina', 'Andorra')
+
+df_pData <- df_countrydata %>% filter(Country %in% c_list)
+df_Total <- df_pData %>% group_by(Country,CountryCode) %>% summarise(TotalBirths=sum(Births))
+
+l <- list(color = toRGB("grey"), width = 0.5)
+g <- list(showframe = FALSE,
+          showcoastlines = FALSE,
+          projection = list(type = 'Mercator'))
+
+plot_ly(df_Total, z = TotalBirths, text = Country,locations = CountryCode, type = 'choropleth',
+       color = df_pData$Births, colors = 'Blues', marker = list(line = l),
+       colorbar = list(tickprefix = '$', title = 'Births')) %>%
+   layout(title = "From 2015-01 to 2016-06",
+        geo = g,
+        height = 320,
+        width = 600)
+```
+
+--- .class #id
+
+## Birth Trends in key Regions
+
+```{r, echo = F}
+cat(sort(c('India','United States','Canada', 'Australia', 'Russia','Argentina', 'Andorra')), sep = ", ")
+```
+
+```{r lmview, fig.width = 15, fig.height = 6, fig.align = 'center', echo=F, warning=F, cache=F, results='asis'}
+
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+
+df_countrydata <- as.data.frame(unique(read.csv("utopia_population_data.csv")))
+c_list         <- c('India','United States','Canada', 'Australia', 'Russia','Argentina', 'Andorra')
+
+df_pData <- df_countrydata %>% filter(Country %in% c_list)
+
+g <- ggplot(df_pData, aes(x = Month, y = log10(Births), group = 1)) +
+    geom_point() +
+    facet_wrap(~ Country, ncol = 7) +
+    geom_smooth(method = "lm") +
+    ggtitle("From 2015-01 to 2016-06") +
+    ylab("Births per month (log scale)") +
+    xlab("Month") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    theme(panel.background = element_rect(fill = "lightblue")) +
+    theme(strip.background = element_rect(fill = "lightblue")) +
+    theme(panel.grid.minor = element_blank()) +
+    theme(panel.grid.major = element_line(colour = "grey95")) +
+    theme(axis.text.x = element_text(size=10,margin = margin(5,0,20,0))) +
+    theme(axis.text.y = element_text(size=10,margin = margin(0,0,0,10))) +
+    theme(axis.title.x = element_blank()) +
+    theme(axis.title.y = element_text(size = 12,margin = margin(15,15,30,15))) 
+
+g
+
+```
+
+--- .class #id
+
+## Historical Birth Numbers in key Regions
+
+```{r, echo = F}
+cat(sort(c('India','United States','Canada', 'Australia', 'Russia','Argentina', 'Andorra')), sep = ", ")
+```
+
+```{r historyview, fig.width = 15, fig.height = 7, fig.align = 'center', echo=F, warning=F, cache=F, results='asis'}
+
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+
+df_countrydata <- as.data.frame(unique(read.csv("utopia_population_data.csv")))
+c_list         <- c('India','United States','Canada', 'Australia', 'Russia','Argentina', 'Andorra')
+
+df_pData <- df_countrydata %>% filter(Country %in% c_list)
+
+g <- ggplot(df_pData, aes(x = Month, y = log10(Births), colour = Country, group = Country)) +
+    geom_line(size = .7) +
+    geom_point(aes(colour = Country)) +
+    ggtitle("From 2015-01 to 2016-06") +
+    ylab("Births per month (log scale)") +
+    xlab("Month") +
+    theme(legend.position = "bottom") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    theme(panel.background = element_rect(fill = "lightblue")) +
+    theme(strip.background = element_rect(fill = "lightblue")) +
+    theme(panel.grid.minor = element_blank()) +
+    theme(panel.grid.major = element_line(colour = "grey95")) +
+    theme(axis.text.x = element_text(size=10,margin = margin(5,0,20,0))) +
+    theme(axis.text.y = element_text(size=10,margin = margin(0,0,0,10))) +
+    theme(axis.title.x = element_blank()) +
+    theme(axis.title.y = element_text(size = 12,margin = margin(15,15,30,15))) 
+        
+g
+
+```
